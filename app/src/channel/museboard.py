@@ -14,12 +14,10 @@ class MuseBoard(object):
         self.board_type = BoardIds.MUSE_2_BOARD
         self.board_preset = BrainFlowPresets.DEFAULT_PRESET
         self.board = BoardShim(self.board_type, self.params)
-        pass
 
     def connect_to_session(self) -> None:
         self.board.prepare_session()
         self.board.start_stream()
-        pass
 
     def get_session_data(self) -> np.ndarray:
         return self.board.get_board_data(num_samples=None, preset=self.board_preset)
@@ -32,4 +30,3 @@ class MuseBoard(object):
 
     def release_session(self) -> None:
         self.board.release_session()
-        pass
