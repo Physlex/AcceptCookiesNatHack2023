@@ -33,8 +33,8 @@ def connect_brainflow(serial_port_num: int, log: bool = False) -> tuple:
         board_data_buff[board_time_chann]
 
         print("\n--------EEG Data")
-        for channel in board_eeg_chann:
-            print(board_data_buff[channel])
+        for chann_id in board_eeg_chann:
+            print(board_data_buff[chann_id])
 
     return {
         "board_egg_chann": board_eeg_chann,
@@ -44,4 +44,5 @@ def connect_brainflow(serial_port_num: int, log: bool = False) -> tuple:
 
 
 if __name__ == "__main__":
-    connect_brainflow()
+    connect_brainflow(serial_port_num=5, log=True)
+    pass

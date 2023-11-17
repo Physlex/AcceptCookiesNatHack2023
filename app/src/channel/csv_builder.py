@@ -1,7 +1,6 @@
 from connect_muse import connect_brainflow
 import csv
 
-
 def write_to_csv(data, file_path):
     with open(file_path, "w", newline="") as csvfile:
         # Create a CSV writer
