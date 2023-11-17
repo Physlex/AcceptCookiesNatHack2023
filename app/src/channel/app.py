@@ -4,8 +4,10 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from connect_muse import connect_brainflow
 import uvicorn
+import mongoengine
 
 app = FastAPI()
+mongoengine.connect("NatHacks")
 
 # Mount the 'templates' folder to serve HTML files
 app.mount("/templates", StaticFiles(directory="templates"), name="templates")
