@@ -1,13 +1,17 @@
-import argparse, time
-from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds, BrainFlowPresets
+import time
+from brainflow.board_shim import (
+    BoardShim,
+    BrainFlowInputParams,
+    BoardIds,
+    BrainFlowPresets
+)
 import numpy as np
 import matplotlib.pyplot as plt
 
-def run_tests() -> None:
+def connect_brainflow():
     """
-        Rough assertion-based-tests to quickly craft the MVP for nathack
+    Connects with MUSE2 using brainflow and returns the buffer
     """
-
     BoardShim.enable_dev_board_logger()
 
     params = BrainFlowInputParams()
@@ -30,8 +34,8 @@ def run_tests() -> None:
     print("EEG - specific data")
     print(board_eeg_chann)
 
-    return
+    return board_data_buff
 
 if __name__ == "__main__":
-    run_tests()
+    connect_brainflow()
     pass
