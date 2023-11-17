@@ -1,40 +1,40 @@
 import time
-from brainflow.board_shim import (
-    BoardShim,
-    BrainFlowInputParams,
-    BoardIds,
-    BrainFlowPresets
-)
-import numpy as np
-import matplotlib.pyplot as plt
+from museboard import MuseBoard
+from brainflow import BoardShim
 
-def connect_brainflow():
+def connect_brainflow(serial_port_num:int, log:bool=False) -> tuple:
     """
     Connects with MUSE2 using brainflow and returns the buffer
     """
-    BoardShim.enable_dev_board_logger()
+    if (log == True):
+        BoardShim.enable_dev_board_logger()
 
-    params = BrainFlowInputParams()
-    params.serial_port = "4"
-
-    # Call stream
-    board = BoardShim(BoardIds.MUSE_2_BOARD, params)
-    board.prepare_session()
-    board.start_stream()
-    time.sleep(2)
-    board_data_buff = board.get_board_data(num_samples=None, preset=BrainFlowPresets.DEFAULT_PRESET)
-    board_eeg_chann = board.get_eeg_channels(board_id=BoardIds.MUSE_2_BOARD, preset=BrainFlowPresets.DEFAULT_PRESET)
+    board = MuseBoard(serial_port_num=serial_port_num)
+    board.connect_to_session()
+    time.sleep(10)
     board.release_session()
 
-    # Output brain data
-    print("Standard board data")
-    for i in range(len(board_data_buff)):
-        print(board_data_buff[i])
+    board_eeg_chann = board.get_eeg_channel_id()
+    board_time_chann = board.get_timestamp_id()
+    board_data_buff = board.get_session_data()
 
-    print("EEG - specific data")
-    print(board_eeg_chann)
+    if (log == True):
+        print("Standard board data")
+        for i in range(len(board_data_buff)):
+            print(board_data_buff[i])
 
-    return board_data_buff
+        print("\n--------EEG Channels")
+        print(board_eeg_chann)
+
+        print("\n--------EEG Timestamps")
+        print(board_time_chann)
+
+        board_data_buff[board_time_chann]
+
+        for channel in board_eeg_chann:
+            print(board_data_buff[channel])
+
+    return (board_eeg_chann, board_time_chann, board_data_buff)
 
 if __name__ == "__main__":
     connect_brainflow()
