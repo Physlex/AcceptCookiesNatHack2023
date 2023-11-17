@@ -1,0 +1,6 @@
+pyserial
+brainflow
+matlab
+numpy
+mne
+fastapi[all]
