@@ -11,7 +11,7 @@ def connect_brainflow(serial_port_num:int, log:bool=False) -> tuple:
 
     board = MuseBoard(serial_port_num=serial_port_num)
     board.connect_to_session()
-    time.sleep(10)
+    time.sleep(2)
     board.release_session()
 
     board_eeg_chann = board.get_eeg_channel_id()
@@ -37,5 +37,5 @@ def connect_brainflow(serial_port_num:int, log:bool=False) -> tuple:
     return (board_eeg_chann, board_time_chann, board_data_buff)
 
 if __name__ == "__main__":
-    connect_brainflow()
+    connect_brainflow(serial_port_num=5, log=True)
     pass
