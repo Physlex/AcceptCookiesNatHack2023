@@ -5,6 +5,7 @@ from brainflow.board_shim import (
     BoardIds,
 )
 
+
 def connect_brainflow():
     """
     Connects with MUSE2 using brainflow and returns the buffer
