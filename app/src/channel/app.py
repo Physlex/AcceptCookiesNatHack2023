@@ -12,6 +12,8 @@ mongoengine.connect("NatHacks")
 # Mount the 'templates' folder to serve HTML files
 app.mount("/templates", StaticFiles(directory="templates"), name="templates")
 
+# Mount the 'static' folder to serve static files (including JavaScript)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 def serve_html(file_path: Path) -> HTMLResponse:
     if not file_path.is_file():
