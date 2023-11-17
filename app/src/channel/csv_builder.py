@@ -3,16 +3,18 @@ import csv
 
 serial_port_num = int(input("Enter your serial port no: "))
 brainflow_data = connect_brainflow(serial_port_num)
+file = open("test.csv","w")
+writer = csv.writer(file)
+channels = brainflow_data["board_egg_chann"]
 fieldnames = ["timestamp"]
-for channel in brainflow_data["board_egg_chann"]:
-    fieldnames.append(f"channel{channel}")
-csv_writer = csv.DictWriter("test.csv", fieldnames=fieldnames)
-for channel in brainflow_data["board_egg_chann"]:
-    csv_data = {}
-    for i in range(len(brainflow_data["board_data_buff"][channel])):
-        data = brainflow_data["board_data_buff"][channel][i]
-        timestamp = brainflow_data["board_time_chann"][i]
-        csv_data[f"channel{channel}"] = data
-        csv_data["timestamp"] = timestamp
-    csv_writer.writerow(csv_data)
-        
+fieldnames.extend(channels)
+writer.writerow(fieldnames)
+timestamp_id = brainflow_data["board_time_chann"] 
+timestamps = brainflow_data["board_data_buff"][timestamp_id]
+for i in range(len(timestamps)):
+    csv_row = []
+    csv_row.append(timestamps[i])
+    for channel in brainflow_data["board_egg_chann"]:
+        csv_row.append(brainflow_data["board_data_buff"][channel][i])
+    writer.writerow(csv_row)      
+file.close()
