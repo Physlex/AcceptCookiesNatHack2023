@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from pathlib import Path
 from connect_muse import connect_brainflow
 import uvicorn
-from models import User,Data
+from models import User, Data
 import mongoengine
 
 app = FastAPI()
@@ -53,23 +53,20 @@ async def read_html(filename: str):
 
 
 @app.post("/connect_brainflow")
-async def connect(id:int = 5):
+async def connect(id: int = 5):
     brainflow_data = connect_brainflow(id)
     eeg_channels = brainflow_data["board_egg_chann"]
     timestamp_channel = brainflow_data["board_time_chann"]
     user = User.objects().first()
     data = Data(
-        timestamps = brainflow_data["board_data_buff"][timestamp_channel],
-        data = [brainflow_data["board_data_buff"][i] for i in eeg_channels],
-        channels = eeg_channels,
-        device_used = "muse2"
+        timestamps=brainflow_data["board_data_buff"][timestamp_channel],
+        data=[brainflow_data["board_data_buff"][i] for i in eeg_channels],
+        channels=eeg_channels,
+        device_used="muse2",
     )
     data = user.data.append(data)
-    user.update(
-        set__data = data
-    )
-    return JSONResponse(content={"Succes":"True!"})
-    
+    user.update(set__data=data)
+    return JSONResponse(content={"Succes": "True!"})
 
 
 if __name__ == "__main__":
