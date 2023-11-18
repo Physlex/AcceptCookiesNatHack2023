@@ -23,4 +23,3 @@ def build_csv_from_muse_channels(
         writer.writerow(csv_row)
 
     file.close()
-    pass

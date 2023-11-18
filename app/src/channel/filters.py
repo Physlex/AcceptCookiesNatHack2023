@@ -17,7 +17,7 @@ class Filter(ABC):
         Abstract apply function. Takes a list of eeg data channels and returns
         it instantly, applying no operations.
         """
-        return eeg_channels
+        pass
 
 
 class ICAFilter(Filter):
