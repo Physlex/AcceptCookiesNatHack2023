@@ -1,23 +1,23 @@
-from connect_muse import connect_brainflow
 import csv
+import numpy as np
 
-serial_port_num = int(input("Enter your serial port no: "))
-brainflow_data = connect_brainflow(serial_port_num)
-file = open("test.csv", "w")
+def build_csv_from_muse_channels(eeg_channels: list[list[np.float64]], timestamp_channel: list[np.float64]) -> None:
+    file = open("test.csv", "w")
+    writer = csv.writer(file)
 
-writer = csv.writer(file)
-channels = brainflow_data["board_egg_chann"]
+    # Create header for csv
+    fieldnames = ["timestamp"]
+    for i in range(len(eeg_channels)):
+        fieldnames.append(f"Channel {i + 1}")
+    writer.writerow(fieldnames)
 
-fieldnames = ["timestamp"]
-fieldnames.extend(channels)
-writer.writerow(fieldnames)
+    # Create body for csv
+    for i in range(len(timestamp_channel)):
+        csv_row = []
+        csv_row.append(timestamp_channel[i])
+        for channel in eeg_channels:
+            csv_row.append(channel[i])
+        writer.writerow(csv_row)
 
-timestamp_id = brainflow_data["board_time_chann"] 
-timestamps = brainflow_data["board_data_buff"][timestamp_id]
-for i in range(len(timestamps)):
-    csv_row = []
-    csv_row.append(timestamps[i])
-    for channel in brainflow_data["board_egg_chann"]:
-        csv_row.append(brainflow_data["board_data_buff"][channel][i])
-    writer.writerow(csv_row)      
-file.close()
+    file.close()
+    pass
