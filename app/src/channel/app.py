@@ -7,6 +7,7 @@ from pathlib import Path
 from connect_muse import connect_brainflow
 import uvicorn
 from models import User, Data
+from museboard import MuseBoard
 import mongoengine
 
 app = FastAPI()
@@ -54,9 +55,22 @@ async def read_html(filename: str):
 
 @app.post("/connect_brainflow")
 async def connect(id: int = 5):
-    brainflow_data = connect_brainflow(id)
-    eeg_channels = brainflow_data["board_egg_chann"]
-    timestamp_channel = brainflow_data["board_time_chann"]
+    muse_board = MuseBoard(serial_port_num=id)
+    muse_board.connect_to_session()
+
+
+@app.post("/remove_connection")
+async def remove(id: int = 5):
+    muse_board = MuseBoard(serial_port_num=id)
+    muse_board.release_session()
+
+
+@app.post("/poll_data")
+async def poll(id: int = 5):
+    board = MuseBoard(serial_port_num=id)
+    eeg_channels = board.get_eeg_channel_id()
+    timestamp_channel = board.get_timestamp_id()
+    brainflow_data = board.get_session_data()
     user = User.objects().first()
     data = Data(
         timestamps=brainflow_data["board_data_buff"][timestamp_channel],
@@ -66,7 +80,12 @@ async def connect(id: int = 5):
     )
     data = user.data.append(data)
     user.update(set__data=data)
-    return JSONResponse(content={"Succes": "True!"})
+    content = {
+        "timestamp_channel": timestamp_channel,
+        "eeg_channels": eeg_channels,
+        "brainflow_data": brainflow_data,
+    }
+    return JSONResponse(content=content)
 
 
 if __name__ == "__main__":
