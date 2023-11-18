@@ -14,6 +14,7 @@ import mongoengine
 # INTERNAL
 from museboard import MuseBoard
 from models import User, Data
+from filters import last_state, ICAFilter, WavelettFilter, FourierFilter
 
 ## GLOBAL SERVER STATE
 app = FastAPI()
@@ -38,6 +39,7 @@ app.mount("/static/css", StaticFiles(directory="static/css"), name="static/css")
 
 ## RENDER
 
+
 def serve_html(file_path: Path) -> HTMLResponse:
     if not file_path.is_file():
         return HTMLResponse(content="File not found", status_code=404)
@@ -55,6 +57,7 @@ async def index():
     file_path = Path("templates/index.html")
     return serve_html(file_path)
 
+
 # Define a route to render HTML files
 @app.get("/{filename}", response_class=HTMLResponse)
 async def read_html(filename: str):
@@ -69,13 +72,16 @@ async def read_html(filename: str):
 async def connect(id: int = 5):
     muse_board = MuseBoard(serial_port_num=id)
     muse_board.connect_to_session()
+    last_state = [[]]
+
 
 @app.post("/remove_connection")
 async def remove(id: int = 5):
     muse_board = MuseBoard(serial_port_num=id)
     muse_board.release_session()
 
-@app.post("/poll_data")
+
+@app.get("/poll_data")
 async def poll(id: int = 5):
     board = MuseBoard(serial_port_num=id)
     eeg_channels = board.get_eeg_channel_id()
@@ -88,8 +94,11 @@ async def poll(id: int = 5):
         channels=eeg_channels,
         device_used="muse2",
     )
-    data = user.data.append(data)
-    user.update(set__data=data)
+    user_data = user.data
+    user_data.append(data)
+    user.update(set__data=user_data)
+
+    last_state = last_state.extend(user_data)
 
     # TODO: Apply preprocessing
     # TODO: FOR EACH filter in Filters:
@@ -103,9 +112,19 @@ async def poll(id: int = 5):
 
     return JSONResponse(content=content)
 
+
 # TODO: POST Send filter state update for server state
+@app.post("/filter_state")
+async def filter_state_update(filter: str = ""):
+    if filter == "ICA":
+        state_filter = ICAFilter()
+    elif filter == "FOURIER":
+        state_filter = FourierFilter()
+    elif filter == "WAVELETT":
+        state_filter = WavelettFilter()
+    response = {"new_state": state_filter.apply(eeg_channels=last_state)}
+    return JSONResponse(content=response)
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
-    pass
-

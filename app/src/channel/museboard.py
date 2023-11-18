@@ -6,8 +6,9 @@ from brainflow.board_shim import (
 )
 import numpy as np
 
+
 class MuseBoard(object):
-    def __init__(self, serial_port_num: int=0) -> None:
+    def __init__(self, serial_port_num: int = 0) -> None:
         self.params = BrainFlowInputParams()
         self.params.serial_port = str(serial_port_num)
 
