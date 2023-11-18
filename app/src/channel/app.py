@@ -1,13 +1,27 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pathlib import Path
 from connect_muse import connect_brainflow
 import uvicorn
+from models import User, Data
+from museboard import MuseBoard
 import mongoengine
 
 app = FastAPI()
 mongoengine.connect("NatHacks")
+
+origins = ["localhost"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Mount the 'templates' folder to serve HTML files
 app.mount("/templates", StaticFiles(directory="templates"), name="templates")
@@ -40,8 +54,38 @@ async def read_html(filename: str):
 
 
 @app.post("/connect_brainflow")
-async def connect():
-    return connect_brainflow()
+async def connect(id: int = 5):
+    muse_board = MuseBoard(serial_port_num=id)
+    muse_board.connect_to_session()
+
+
+@app.post("/remove_connection")
+async def remove(id: int = 5):
+    muse_board = MuseBoard(serial_port_num=id)
+    muse_board.release_session()
+
+
+@app.post("/poll_data")
+async def poll(id: int = 5):
+    board = MuseBoard(serial_port_num=id)
+    eeg_channels = board.get_eeg_channel_id()
+    timestamp_channel = board.get_timestamp_id()
+    brainflow_data = board.get_session_data()
+    user = User.objects().first()
+    data = Data(
+        timestamps=brainflow_data["board_data_buff"][timestamp_channel],
+        data=[brainflow_data["board_data_buff"][i] for i in eeg_channels],
+        channels=eeg_channels,
+        device_used="muse2",
+    )
+    data = user.data.append(data)
+    user.update(set__data=data)
+    content = {
+        "timestamp_channel": timestamp_channel,
+        "eeg_channels": eeg_channels,
+        "brainflow_data": brainflow_data,
+    }
+    return JSONResponse(content=content)
 
 
 if __name__ == "__main__":

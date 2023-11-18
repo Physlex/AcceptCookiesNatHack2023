@@ -18,7 +18,6 @@ def connect_brainflow(serial_port_num: int, log: bool = False) -> tuple:
     board_data_buff = board.get_session_data()
     board.release_session()
 
-
     if log == True:
         print("Standard board data")
         for i in range(len(board_data_buff)):
