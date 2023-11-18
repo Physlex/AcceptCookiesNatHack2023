@@ -43,6 +43,10 @@ async def read_html(filename: str):
 async def connect():
     return connect_brainflow()
 
+@app.post("/append_filter")
+async def mutate_filter_state():
+    # Logic to allow server state to mutate, allowing additional filters to be appended
+    return False # TODO: Replace with actual return result
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

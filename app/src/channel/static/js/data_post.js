@@ -1,4 +1,4 @@
-document.getElementById('connectBrainflow').addEventListener('click', function() {
+document.getElementById('connect-brainflow').addEventListener('click', function() {
     // Your API endpoint URL on localhost
     const apiUrl = 'http://localhost:3000/connect_brainflow';  // Replace with your actual API endpoint
 

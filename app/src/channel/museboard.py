@@ -28,7 +28,7 @@ class MuseBoard(object):
             board_id=self.board_type, preset=self.board_preset
         )
 
-    def get_timestamp_id(self) -> np.ndarray:
+    def get_time_channel_id(self) -> np.ndarray:
         return self.board.get_timestamp_channel(
             board_id=self.board_type, preset=self.board_preset
         )
