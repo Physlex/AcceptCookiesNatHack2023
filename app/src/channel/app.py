@@ -14,6 +14,7 @@ import mongoengine
 # INTERNAL
 from museboard import MuseBoard
 from models import User, Data
+from csv_to_json import make_json
 
 ## GLOBAL SERVER STATE
 app = FastAPI()
@@ -102,6 +103,23 @@ async def poll(id: int = 5):
     }
 
     return JSONResponse(content=content)
+
+# python app reads EEG data
+# python stores it as json file (or converts)
+# fastapi sends data to webpage to be displayed on a chart
+# NO IDEA IF THIS WORKS
+@app.post("/eeg_data")
+async def send_eeg_data():
+    # DAMN!
+    # defining file paths, creating json file
+    json_file = open("EEGdata.json", x)
+    json_path = Path(f"EEGdata.json")
+    csv_path = Path(f"test.csv")
+    # converting eeg data to json
+    make_json(csv_path, json_path)
+    # send to webpage
+    return json_file
+    
 
 # TODO: POST Send filter state update for server state
 
