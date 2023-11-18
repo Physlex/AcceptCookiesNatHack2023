@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- CSS -->
+    <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+    crossorigin="anonymous">
+
+    <!-- Meta Data -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -9,15 +16,28 @@
     <title>Button Example</title>
 </head>
 <body>
-        <h1> Connet to brainflow</h1>
-         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-         <button type="button" id="Start" class="btn btn-primary">Start</button>
-         <div class="mb-3">
-            <label for="exampleFormControlInput1" class="form-label">Port id:</label>
-            <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="5">
-          </div>          
-         <button type="button" id="Stop" class="btn btn-primary">Stop</button>
+    <div id="main-application">
+        <h1> Connect to brainflow</h1>
+        <button type="button" id="Start" class="btn btn-primary">Start</button>
+        <div class="mb-3">
+           <label for="exampleFormControlInput1" class="form-label">Port id:</label>
+           <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="5">
+        </div>
+        <button type="button" id="Stop" class="btn btn-primary">Stop</button>
+
+        <form id="filter-select">
+            <label for="filters">Select Filter:</label>
+            <select name="filters" id="filters" onchange="onFilterSubmit(this.value)">
+                <option value="convolution">Convolution</option>
+                <option value="fft">Fourier Transform</option>
+                <option value="PSD">Power Spectral Density</option>
+            </select>
+            <input type="submit">
+        </form>    </div>
+
+    <!-- Internal Source Files -->
 
     <script src="../static/js/data_post.js"></script>
+    <script src="../static/js/filter_select.js"></script>
 </body>
 </html>
