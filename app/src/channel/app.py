@@ -112,7 +112,7 @@ async def poll(id: int = 5):
 async def send_eeg_data():
     # DAMN!
     # defining file paths, creating json file
-    json_file = open("EEGdata.json", x)
+    json_file = open("EEGdata.json", "w")
     json_path = Path(f"EEGdata.json")
     csv_path = Path(f"test.csv")
     # converting eeg data to json
