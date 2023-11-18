@@ -26,3 +26,4 @@ document.getElementById('connectBrainflow').addEventListener('click', function()
         // Handle errors here
     });
 });
+

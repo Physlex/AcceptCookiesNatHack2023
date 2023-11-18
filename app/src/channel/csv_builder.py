@@ -3,7 +3,7 @@ import csv
 
 serial_port_num = int(input("Enter your serial port no: "))
 brainflow_data = connect_brainflow(serial_port_num)
-file = open("test.csv","w")
+file = open("test.csv", "w")
 writer = csv.writer(file)
 channels = brainflow_data["board_egg_chann"]
 fieldnames = ["timestamp"]
