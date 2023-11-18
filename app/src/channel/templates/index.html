@@ -18,25 +18,26 @@
 <body>
     <div id="main-application">
         <h1> Connect to brainflow</h1>
-        <button type="button" id="Start" class="btn btn-primary">Start</button>
-        <div class="mb-3">
-           <label for="exampleFormControlInput1" class="form-label">Port id:</label>
-           <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="5">
-        </div>
-        <button type="button" id="Stop" class="btn btn-primary">Stop</button>
+        <input id="start-text-field" type="text" value="5">
+        <button id="start-btn">Start</button>
 
-        <form id="filter-select">
-            <label for="filters">Select Filter:</label>
+        <br>
+        <br>
+        
+        <input id="stop-text-field" type="text" value="5">
+        <button id="stop-btn">Stop</button>
+
+        <form id="filter-select" class="mb-3">
+            <label for="filters" class="form-label">Select Filter:</label>
             <select name="filters" id="filters" onchange="onFilterSubmit(this.value)">
                 <option value="convolution">Convolution</option>
                 <option value="fft">Fourier Transform</option>
                 <option value="PSD">Power Spectral Density</option>
             </select>
-            <input type="submit">
-        </form>    </div>
+        </form>
+    </div>
 
     <!-- Internal Source Files -->
-
     <script src="../static/js/data_post.js"></script>
     <script src="../static/js/filter_select.js"></script>
 </body>

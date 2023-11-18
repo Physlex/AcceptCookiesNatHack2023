@@ -1,29 +1,26 @@
-document.getElementById('connect-brainflow').addEventListener('click', function() {
-    // Your API endpoint URL on localhost
-    const apiUrl = 'http://localhost:3000/connect_brainflow';  // Replace with your actual API endpoint
+const connect_url = 'http://localhost:8000/connect_brainflow';
+document.querySelector('#start-btn').addEventListener('click', () => {
+    let payload = document.querySelector('#start-text-field').value;
+    console.log(payload);
 
-    // Sample data to be sent in the POST request
-    const postData = {
-        key1: 'value1',
-        key2: 'value2'
-    };
-
-    // Make a POST request using the Fetch API
-    fetch(apiUrl, {
+    // Post the payload to the muse board
+    fetch(connect_url+"?id="+payload, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(postData),
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-        // You can handle the response data here
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        // Handle errors here
     });
 });
 
+const resolve_url = 'http://localhost:8000/remove_connection';
+document.querySelector('#stop-btn').addEventListener('click', () => {
+    let payload = document.querySelector('#stop-text-field').value;
+    console.log(payload);
+    // Post the payload to the muse board
+    fetch(resolve_url+"?id="+payload, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+})

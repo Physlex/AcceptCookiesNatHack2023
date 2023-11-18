@@ -18,7 +18,7 @@ from models import User, Data
 ## GLOBAL SERVER STATE
 app = FastAPI()
 mongoengine.connect("NatHacks")
-origins = ["localhost"]
+origins = ["http://127.0.0.1:8000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -81,6 +81,8 @@ async def poll(id: int = 5):
     eeg_channels = board.get_eeg_channel_id()
     timestamp_channel = board.get_time_channel_id()
     brainflow_data = board.get_session_data()
+
+    # Database transactions
     user = User.objects().first()
     data = Data(
         timestamps=brainflow_data["board_data_buff"][timestamp_channel],
@@ -94,7 +96,7 @@ async def poll(id: int = 5):
     # TODO: Apply preprocessing
     # TODO: FOR EACH filter in Filters:
     #           Apply filter to eeg_channel_data
-
+  
     content = {
         "timestamp_channel": timestamp_channel,
         "eeg_channels": eeg_channels,

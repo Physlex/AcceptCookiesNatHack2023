@@ -4,7 +4,7 @@
 //      - Allow logical statement to append additional filters to result (intersection)
 
 // Your API endpoint URL on localhost
-const api_url = 'http://localhost:3000/append_filter';  // Replace with your actual API endpoint
+const api_url = 'http://localhost:8000/append_filter';  // Replace with your actual API endpoint
 
 // @details Mutates the state of the program to include an additional filter.
 //          If one previously existed, remove the filter.
