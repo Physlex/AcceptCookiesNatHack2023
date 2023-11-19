@@ -1,35 +1,19 @@
 let current_data = [];
 // Polls for the EEG data every second
-window.setInterval(createChart, 1000);
+window.setInterval(shortPollEEG, 1000);
 
-
-async function createChart() {
-
+async function fetchEEGData() {
   const data_url = 'http://localhost:8000/poll_data';
-  let data = await fetch(data_url, {
+  const response = await fetch(data_url, {
       method: 'POST',
-      mode: 'no-cors',
       headers: {
           'Content-Type': 'application/json',
       },
-    }
-  ).then((response) => {
-    console.log(response);
-    return JSON.parse(response);
   });
+  return response.json();
+}
 
-  timestamps = data['timestamp_channels']
-  eeg_channels_id = data['eeg_channels']
-  brainflow_data = data['brainflow_data']
-
-  time_arr = [...brainflow_data[timestamps]];
-  eeg_channels = [];
-  for (let i = 0; i < 4; ++i) {
-    let curr_channel = eeg_channels_id[i];
-    eeg_channels.push(brainflow_data[curr_channel]);
-  }
-  
-
+function createChart(eeg_channels, time_channel) {
   new Chart(
     document.getElementById('eeg-data-visual'),
     {
@@ -52,9 +36,29 @@ async function createChart() {
             data: eeg_channels[3]
           }
         ],
+        labels: time_channel
+  }});
+}
 
-        labels: time_arr
-        }
+function shortPollEEG() {
+  fetchEEGData().then((response) => {
+    const package = JSON.parse(response);
+
+    timestamp_channel_id = package['eeg_timestamp_id']
+    eeg_channels_id = package['eeg_channel_id']
+    brainflow_data = package['eeg_brainwave_data']
+  
+    if (timestamp_channel_id === -1) {
+      return;
     }
-  );
+  
+    time_channel = [...brainflow_data[timestamp_channel_id]];
+    eeg_channels = [];
+    for (let i = 0; i < eeg_channels_id.length; ++i) {
+      let curr_channel = eeg_channels_id[i];
+      eeg_channels.push(brainflow_data[curr_channel]);
+    }
+  
+    createChart(eeg_channels, time_channel);  
+  });
 };
