@@ -3,21 +3,26 @@ from museboard import MuseBoard
 from brainflow import BoardShim
 from csv_builder import build_csv_from_muse_channels
 
-def establish_muse2_connection(serial_port_num: int, board: MuseBoard, enable_log_connection:bool) -> None:
-    if (enable_log_connection == True):
+
+def establish_muse2_connection(
+    serial_port_num: int, board: MuseBoard, enable_log_connection: bool
+) -> None:
+    if enable_log_connection == True:
         BoardShim.enable_dev_board_logger()
 
     board.connect_to_session()
     pass
 
+
 def release_muse2_connection(board: MuseBoard) -> None:
-    if (board != None):
+    if board != None:
         board.release_session()
     pass
 
+
 def log_muse2_connection(board: MuseBoard) -> None:
-    assert(board != None)
-    
+    assert board != None
+
     board_data_buff = board.get_session_data()
     board_time_chann = board.get_time_channel_id()
     board_eeg_chann = board.get_eeg_channel_id()
@@ -36,20 +41,23 @@ def log_muse2_connection(board: MuseBoard) -> None:
     print("\n--------EEG Data")
     for chann_id in board_eeg_chann:
         print(board_data_buff[chann_id])
-    
+
     pass
 
+
 def get_board_channel_ids(board: MuseBoard) -> tuple:
-    if (board != None):
+    if board != None:
         return (board.get_eeg_channel_id(), board.get_time_channel_id())
     else:
         return (-1, -1)
 
+
 def get_board_channels(board: MuseBoard) -> list:
-    if (board != None):
+    if board != None:
         return board.get_session_data()
     else:
         return None
+
 
 def get_board_data_as_dict(board: MuseBoard) -> dict:
     board_eeg_chann = board.get_eeg_channel_id()
@@ -62,8 +70,10 @@ def get_board_data_as_dict(board: MuseBoard) -> dict:
         "board_data_buff": board_data_buff,
     }
 
+
 def connect_brainflow() -> dict:
-    return {"Depreciated": -1 }
+    return {"Depreciated": -1}
+
 
 if __name__ == "__main__":
     print("Input Serial Num: ", end="")
