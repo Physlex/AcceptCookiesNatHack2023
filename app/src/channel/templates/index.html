@@ -18,17 +18,8 @@
 <body>
     <div id="main-application">
         <h1> Connect to brainflow</h1>
-<<<<<<< HEAD
         <input id="start-text-field" type="text" value="5">
         <button id="start-btn">Start</button>
-=======
-        <button type="button" id="start" class="btn btn-primary">Start</button>
-        <div class="mb-3">
-           <label for="exampleFormControlInput1" class="form-label">Port id:</label>
-           <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="5">
-        </div>
-        <button type="button" id="Stop" class="btn btn-primary">Stop</button>
->>>>>>> 1f28885efd277ab3d4e9ce4286bc1e3f461abe6f
 
         <br>
         <br>
@@ -44,10 +35,15 @@
                 <option value="PSD">Power Spectral Density</option>
             </select>
         </form>
+
+        <div style="width: 1vw">
+            <canvas id="eeg-data-visual"></canvas>
+        </div>
     </div>
 
     <!-- Internal Source Files -->
     <script src="../static/js/data_post.js"></script>
     <script src="../static/js/filter_select.js"></script>
+    <script src="../static/js/eeg_chart_visual.js"></script>
 </body>
 </html>
