@@ -1,11 +1,11 @@
 import csv
 import numpy as np
 
-
 def build_csv_from_muse_channels(
-    eeg_channels: list[list[np.float64]], timestamp_channel: list[np.float64]
+    eeg_channels: list[list[np.float64]], timestamp_channel: list[np.float64],
+    file_name: str
 ) -> None:
-    file = open("test.csv", "w")
+    file = open(file_name, "w")
     writer = csv.writer(file)
 
     # Create header for csv
