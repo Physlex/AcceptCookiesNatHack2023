@@ -32,11 +32,12 @@ def save_brain_test_data():
 
     muse_board = MuseBoard(serial_num)
     muse_board.connect_to_session()
-    time.sleep(3)
-    channel_packet = tuple(get_channel_data(muse_board))
+    time.sleep(30)
+    eeg_channels, timestamp_channel = get_channel_data(muse_board)
     muse_board.release_session()
 
-    build_csv_from_muse_channels(channel_packet[0], channel_packet[1], file_name)
+    build_csv_from_muse_channels(eeg_channels, timestamp_channel, file_name)
+
     return file_name
 
 

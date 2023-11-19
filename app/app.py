@@ -15,9 +15,9 @@ import uvicorn
 import mongoengine
 
 # INTERNAL
-from museboard import MuseBoard
+from src.channel.museboard import MuseBoard
+from src.channel.filters import last_state, ICAFilter, WavelettFilter, FourierFilter
 from models import User, Data
-from filters import last_state, ICAFilter, WavelettFilter, FourierFilter
 
 ## GLOBAL SERVER STATE
 app = FastAPI()
