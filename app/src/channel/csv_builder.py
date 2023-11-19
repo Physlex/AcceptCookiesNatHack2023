@@ -1,7 +1,10 @@
 import csv
 import numpy as np
 
-def build_csv_from_muse_channels(eeg_channels: list[list[np.float64]], timestamp_channel: list[np.float64]) -> None:
+
+def build_csv_from_muse_channels(
+    eeg_channels: list[list[np.float64]], timestamp_channel: list[np.float64]
+) -> None:
     file = open("test.csv", "w")
     writer = csv.writer(file)
 
@@ -20,4 +23,3 @@ def build_csv_from_muse_channels(eeg_channels: list[list[np.float64]], timestamp
         writer.writerow(csv_row)
 
     file.close()
-    pass
