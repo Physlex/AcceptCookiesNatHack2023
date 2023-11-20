@@ -13,15 +13,11 @@
 <body>
     <div id="main-application">
         <h1> Connect to brainflow</h1>
-        <input id="start-text-field" type="text" value="5">
-        <button id="start-btn">Start</button>
-
-        <br>
-        <br>
-        
-        <input id="stop-text-field" type="text" value="5">
-        <button id="stop-btn">Stop</button>
-
+        <div id="control-panel" style="margin-bottom: 10px;">
+            <input id="port-text-field" type="text" value="5">
+            <button class="btn btn-primary" id="start-btn">Start</button>
+            <button class="btn btn-primary" id="stop-btn">Stop</button>    
+        </div>
         <form id="filter-select" class="mb-3">
             <label for="filters" class="form-label">Select Filter:</label>
             <select name="filters" id="filters" onchange="onFilterSubmit(this.value)">
