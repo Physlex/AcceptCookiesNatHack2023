@@ -1,13 +1,12 @@
 # STL
 from pathlib import Path
+import csv
 
 # EXTERNAL
 from fastapi import FastAPI
-from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
-from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -19,11 +18,13 @@ from src.channel.museboard import MuseBoard
 from src.channel.filters import last_state, ICAFilter, WavelettFilter, FourierFilter
 from models import User, Data
 
+
 ## GLOBAL SERVER STATE
 app = FastAPI()
 mongoengine.connect("NatHacks")
 board = MuseBoard()
 has_connected = False
+is_test_mode = True
 origins = ["http://127.0.0.1:8000"]
 app.add_middleware(
     CORSMiddleware,
@@ -34,24 +35,14 @@ app.add_middleware(
 )
 
 
-## PACKAGE DEFN's
+## MOUNT
 
-class EEGPackage(BaseModel):
-    eeg_timestamp_id: int
-    eeg_channel_id: list[int]
-    eeg_brainwave_data: list[list[float]]
-
-
-# Mount the 'templates' folder to serve HTML files
 app.mount("/templates", StaticFiles(directory="templates"), name="templates")
-
-# Mount the 'static' folder to serve static files (including JavaScript)
 app.mount("/static/js", StaticFiles(directory="static/js"), name="static/js")
 app.mount("/static/css", StaticFiles(directory="static/css"), name="static/css")
 
 
 ## RENDER
-
 
 def serve_html(file_path: Path) -> HTMLResponse:
     if not file_path.is_file():
@@ -63,7 +54,6 @@ def serve_html(file_path: Path) -> HTMLResponse:
 
 
 ## GET
-
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
@@ -80,7 +70,6 @@ async def read_html(filename: str):
 
 ## POST
 
-
 @app.post("/connect_brainflow")
 async def connect(id: int = 5):
     board.set_serial_port_num(id)
@@ -96,43 +85,53 @@ async def remove(id: int = 5):
 
 
 @app.post("/poll_data")
-async def poll(id: int = 5):
-    eeg_channels = []
-    timestamp_channel: int = -1
-    brainflow_data = [[]]
+async def poll():
+    eeg_channels = [[], [], [], []]
+    timestamp_channel = []
     if (has_connected == True):
-        eeg_channels = board.get_eeg_channel_id()
-        timestamp_channel = board.get_time_channel_id()
-        brainflow_data = board.get_session_data()
+        # Connect to museboard
+        eeg_channel_ids = board.get_eeg_channel_id()
+        timestamp_channel_id = board.get_time_channel_id()
+        board_channels = board.get_session_data()
+
+        # package channel data
+        for channel_id in eeg_channel_ids:
+            eeg_channels[channel_id - 1] = board_channels[channel_id]
+        timestamp_channel = board_channels[timestamp_channel_id]
 
         # Database transactions
         user = User.objects().first()
         data = Data(
-            timestamps=brainflow_data["board_data_buff"][timestamp_channel],
-            data=[brainflow_data["board_data_buff"][i] for i in eeg_channels],
-            channels=eeg_channels,
+            timestamps=timestamp_channel,
+            data=board_channels,
+            channels=eeg_channel_ids,
             device_used="muse2",
         )
         user_data = user.data
         user_data.append(data)
         user.update(set__data=user_data)
+    elif(has_connected == False and is_test_mode == True):
+        data = []
+        with open("./src/channel/data/test.csv", "r") as csv_file:
+            csv_iter = csv.reader(csv_file, delimiter=',')
+            for row in csv_iter:
+                if len(row) > 0:
+                    data.append(row)
 
-        last_state = last_state.extend(user_data)
+        for i in range(1, len(data)):
+            row = list(data[i])
+            for j in range(1, len(row)):
+                eeg_channels[j - 1].append(row[j])
 
-        # TODO: Apply preprocessing
-        # TODO: FOR EACH filter in Filters:
-        #           Apply filter to eeg_channel_data
+            time = row[0]
+            timestamp_channel.append(time)
 
-    eeg_package = {
-        "eeg_timestamp_id":timestamp_channel,
-        "eeg_channel_id":eeg_channels,
-        "eeg_brainwave_data":brainflow_data
-        }
+
+    # Create package response object
+    eeg_package = {"timestamp_channel":timestamp_channel, "eeg_channels":eeg_channels}
     encoded_package = jsonable_encoder(eeg_package)
     return JSONResponse(content=encoded_package, media_type="application/json")
 
-
-# TODO: POST Send filter state update for server state
 @app.post("/filter_state")
 async def filter_state_update(filter: str = ""):
     if filter == "ICA":
