@@ -2,6 +2,7 @@ from museboard import MuseBoard
 from csv_builder import build_csv_from_muse_channels
 import time
 
+
 def get_channel_data(board: MuseBoard) -> tuple[list[list], list]:
     eeg_channel_ids = board.get_eeg_channel_id()
     timestamp_channel_id = board.get_time_channel_id()
@@ -15,6 +16,7 @@ def get_channel_data(board: MuseBoard) -> tuple[list[list], list]:
 
     return (eeg_channels, timestamp_channel)
 
+
 def retrieve_user_session_args() -> tuple[str, str]:
     print("enter serial number of bluetooth COM: ", end="")
     serial_num = int(input())
@@ -22,10 +24,11 @@ def retrieve_user_session_args() -> tuple[str, str]:
     print("enter file name for saving: ", end="")
     file_name = str(input())
     file_name = "data/" + file_name
-    if (".csv" not in file_name):
+    if ".csv" not in file_name:
         file_name += ".csv"
 
     return (serial_num, file_name)
+
 
 def save_brain_test_data():
     serial_num, file_name = retrieve_user_session_args()
@@ -42,6 +45,6 @@ def save_brain_test_data():
 
 
 if __name__ == "__main__":
-    file_name = save_brain_test_data()    
+    file_name = save_brain_test_data()
     print(f"Writing session data to: {file_name}")
     pass

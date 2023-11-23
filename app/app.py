@@ -1,9 +1,10 @@
 # STL
 from pathlib import Path
 import csv
+import time
 
 # EXTERNAL
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
@@ -42,53 +43,11 @@ app.mount("/static/js", StaticFiles(directory="static/js"), name="static/js")
 app.mount("/static/css", StaticFiles(directory="static/css"), name="static/css")
 
 
-## RENDER
-
-def serve_html(file_path: Path) -> HTMLResponse:
-    if not file_path.is_file():
-        return HTMLResponse(content="File not found", status_code=404)
-
-    with open(file_path, "r", encoding="utf-8") as file:
-        content = file.read()
-        return HTMLResponse(content=content)
-
-
-## GET
-
-@app.get("/", response_class=HTMLResponse)
-async def index():
-    file_path = Path("templates/index.html")
-    return serve_html(file_path)
-
-
-# Define a route to render HTML files
-@app.get("/{filename}", response_class=HTMLResponse)
-async def read_html(filename: str):
-    file_path = Path(f"templates/{filename}.html")
-    return serve_html(file_path)
-
-
-## POST
-
-@app.post("/connect_brainflow")
-async def connect(id: int = 5):
-    board.set_serial_port_num(id)
-    board.connect_to_session()
-    has_connected = True
-
-
-@app.post("/remove_connection")
-async def remove(id: int = 5):
-    if (has_connected == True):
-        board.release_session()
-        has_connected = False
-
-
-@app.post("/poll_data")
-async def poll():
+## HELPER FUNCTION
+def get_realtime_eeg_data():
     eeg_channels = [[], [], [], []]
     timestamp_channel = []
-    if (has_connected == True):
+    if has_connected == True:
         # Connect to museboard
         eeg_channel_ids = board.get_eeg_channel_id()
         timestamp_channel_id = board.get_time_channel_id()
@@ -110,10 +69,10 @@ async def poll():
         user_data = user.data
         user_data.append(data)
         user.update(set__data=user_data)
-    elif(has_connected == False and is_test_mode == True):
+    elif has_connected == False and is_test_mode == True:
         data = []
         with open("./src/channel/data/test.csv", "r") as csv_file:
-            csv_iter = csv.reader(csv_file, delimiter=',')
+            csv_iter = csv.reader(csv_file, delimiter=",")
             for row in csv_iter:
                 if len(row) > 0:
                     data.append(row)
@@ -125,12 +84,61 @@ async def poll():
 
             time = row[0]
             timestamp_channel.append(time)
+    eeg_package = {"timestamp_channel": timestamp_channel, "eeg_channels": eeg_channels}
+    return eeg_package
 
 
-    # Create package response object
-    eeg_package = {"timestamp_channel":timestamp_channel, "eeg_channels":eeg_channels}
+## RENDER
+
+
+def serve_html(file_path: Path) -> HTMLResponse:
+    if not file_path.is_file():
+        return HTMLResponse(content="File not found", status_code=404)
+
+    with open(file_path, "r", encoding="utf-8") as file:
+        content = file.read()
+        return HTMLResponse(content=content)
+
+
+## GET
+
+
+@app.get("/", response_class=HTMLResponse)
+async def index():
+    file_path = Path("templates/index.html")
+    return serve_html(file_path)
+
+
+# Define a route to render HTML files
+@app.get("/{filename}", response_class=HTMLResponse)
+async def read_html(filename: str):
+    file_path = Path(f"templates/{filename}.html")
+    return serve_html(file_path)
+
+
+## POST
+
+
+@app.post("/connect_brainflow")
+async def connect(id: int = 5):
+    board.set_serial_port_num(id)
+    board.connect_to_session()
+    has_connected = True
+
+
+@app.post("/remove_connection")
+async def remove(id: int = 5):
+    if has_connected == True:
+        board.release_session()
+        has_connected = False
+
+
+@app.post("/poll_data")
+async def poll():
+    eeg_package = get_realtime_eeg_data()
     encoded_package = jsonable_encoder(eeg_package)
     return JSONResponse(content=encoded_package, media_type="application/json")
+
 
 @app.post("/filter_state")
 async def filter_state_update(filter: str = ""):
@@ -142,6 +150,14 @@ async def filter_state_update(filter: str = ""):
         state_filter = WavelettFilter()
     response = {"new_state": state_filter.apply(eeg_channels=last_state)}
     return JSONResponse(content=response)
+
+
+@app.websocket("/ws")
+async def data_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        await websocket.send_json(get_realtime_eeg_data())
+        time.sleep(1)
 
 
 if __name__ == "__main__":
