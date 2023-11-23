@@ -1,5 +1,3 @@
-let current_data = [[], [], [], []];
-
 const num_seconds = 1; // You can change this
 const SEC_TO_MILLISEC = 1000;
 window.setInterval(shortPollEEG, (num_seconds * SEC_TO_MILLISEC));
@@ -18,42 +16,39 @@ async function fetchEEGData() {
   return response;
 }
 
-async function createChart(eeg_channels, time_channel) {
-  new Chart(
-    document.getElementById('eeg-data-visual'),
-    {
-        data: {
-          datasets: [{
-            type: 'line',
-            label: 'channel one',
-            data: eeg_channels[0]
-          }, {
-            type: 'line',
-            label: 'channel two',
-            data: eeg_channels[1]
-          }, {
-            type: 'line',
-            label: 'channel three',
-            data: eeg_channels[2]
-          }, {
-            type: 'line',
-            label: 'channel four',
-            data: eeg_channels[3]
-          }
-        ],
-        labels: time_channel
-  }});
+
+/// CHART FUNCTIONALITY
+
+// Configures and updates the global chart context
+async function createEEGChart(chart_type, eeg_channels, timestamps) {
+  let datasets = [];
+  for (i = 0; i < eeg_channels.length; ++i) {
+    datasets.push({label: `Channel ${i + 1}`, data: eeg_channels[i]});
+  }
+  const time_series_data = {datasets: datasets, labels: timestamps};
+
+  const context = document.querySelector('#eeg-data-visual');
+  const config = {type: chart_type, data: time_series_data};
+  console.log(config);
+  let eeg_chart = await new Chart(context, config);
+
+  return eeg_chart;
+}
+
+function updateChart(new_data, label) {
+  // TODO: FINISH FUNCT
 }
 
 function shortPollEEG() {
   fetchEEGData().then( (data_package) => {
-    const eeg_channels = data_package["eeg_channels"];
-    const timestamp_channel = data_package["timestamp_channel"];
-    current_data.push(...eeg_channels);
-    if (timestamp_channel.length == 0) {
-      return;
+    let eeg_channels = data_package["eeg_channels"];
+    let timestamp_channel = data_package["timestamp_channel"];
+
+    const epoch = timestamp_channel[0];
+    for (i = 0; i < timestamp_channel.length; i++) {
+      timestamp_channel[i] = timestamp_channel[i] - epoch;
     }
-  
-    createChart(current_data, timestamp_channel);
+
+    createEEGChart('line', eeg_channels, timestamp_channel);
   });
 }
