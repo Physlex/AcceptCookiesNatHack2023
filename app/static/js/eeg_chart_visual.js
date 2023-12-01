@@ -41,11 +41,14 @@ class EEGChart {
   }
 
   /**
-   * 
+   * Updates chart by appending more data from the short poll 
   */
   updateChart() {
-    // TODO: FINISH FUNCT
-    console.log("Called!");
+    this.chart_internal.data.labels.push(this.timestamp_channel);
+    this.chart_internal.data.datasets.forEach((dataset) => {
+      dataset.data.push(this.eeg_channels);
+    });
+    this.chart_internal.update();
   }
 
 
