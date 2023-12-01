@@ -39,7 +39,7 @@ class EEGChart {
     this.type = type;
     this.context_id = html_ctx;
   }
-  
+
   /**
    * 
   */
