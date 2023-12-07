@@ -47,36 +47,24 @@ class EEGChart {
    * Updates chart by appending more data from the short poll 
   */
   update(new_data) {
+    // Update timestamp channel
     let new_timestamps = new_data[timestamp_channel_id];
     const prior_last_stamp = parseFloat(this.timestamp_channel[this.timestamp_channel.length - 1]);
     const epoch = parseFloat(new_timestamps[0]);
     for (let i = 1; i < new_timestamps.length; ++i) {
       const normalized_stamp = (parseFloat(new_timestamps[i] - epoch + prior_last_stamp)).toFixed(4);
-      this.timestamp_channel.push(normalized_stamp);
+      this.chart_internal.data.labels.push(normalized_stamp);
     }
 
     // Update eeg channel
     let new_eeg_channels = new_data[eeg_channels_id]
-    for (let i = 0; i < eeg_channels.length; ++i) {
+    for (let i = 0; i < this.eeg_channels.length; ++i) {
       let current_new_eeg_channel = new_eeg_channels[i];
       for (let j = 0; j < current_new_eeg_channel.length; ++j) {
-        this.eeg_channels.push(current_new_eeg_channel[j]);
+        this.chart_internal.data.datasets[i].data.push(current_new_eeg_channel[j]);
       }
     }
-    console.log(this.eeg_channels);
 
-    // console.log(this.data_internal);
-
-    // for (let i = 0; i < this.eeg_channels.length; ++i) {
-    //   let current_channel = this.eeg_channels[i];
-    //   let current_dataset = this.chart_internal.data.datasets[i].data;
-    //   for (let j = 0; j < current_channel.length; ++j) {
-    //     current_dataset.push(current_channel[j]);
-    //   }
-    //   this.chart_internal.data.datasets[i].data = current_dataset;
-    // }
-
-    this.chart_internal.data.labels = this.timestamp_channel;
     this.chart_internal.update();
   }
 
@@ -93,7 +81,7 @@ class EEGChart {
    * @return chart, promise(Chart):
    *         Returns a chart promise to be resolved on return.
   */
-  async constructChart() {
+  async build() {
     let datasets = [];
     for (let i = 0; i < this.eeg_channels.length; ++i) {
       datasets.push({label: `Channel ${i + 1}`, data: this.eeg_channels[i]});
@@ -103,9 +91,17 @@ class EEGChart {
     for (let i = 0; i < this.timestamp_channel.length; i++) {
       this.timestamp_channel[i] = (this.timestamp_channel[i] - epoch).toFixed(4);
     }
-    this.data_internal = {datasets: datasets, labels: this.timestamp_channel};
+    const eeg_data = {datasets: datasets, labels: this.timestamp_channel};
 
-    const config = {type: this.type, data: this.data_internal};
+    const chart_options = {
+        animation: false,
+        normalized: true,
+        parsion: false,
+        responsive: true
+    };
+
+    const config = {type: this.type, data: eeg_data, options: chart_options};
+    console.log(config);
     const context = document.querySelector(this.context_id);
     this.chart_internal = await new Chart(context, config);
   }
@@ -141,7 +137,7 @@ function shortPollUpdateChart(chart, new_data) {
 
 let eeg_data_visual_chart = fetchEEGData().then((data_packet) => {
   let eeg_data_visual_chart = new EEGChart(data_packet);
-  eeg_data_visual_chart.constructChart();
+  eeg_data_visual_chart.build();
   return eeg_data_visual_chart;
 });
 
