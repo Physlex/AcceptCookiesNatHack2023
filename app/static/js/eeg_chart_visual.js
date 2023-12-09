@@ -1,10 +1,97 @@
-/// CLASSES
+// GLOBAL
 
 const timestamp_channel_id = "timestamp_channel";
 const eeg_channels_id = "eeg_channels";
 
+/// CLASSES
+
+class EEGPacket {
+  /// PUBLIC
+
+  /**
+   * @brief default constructor for eeg packet creation
+   */
+  constructor() {
+  }
+
+  /**
+   * @brief queries packet on server, then processes and stores it.
+   * 
+   * @param {str} URL the url of the server request to be made for the fetch.
+   */
+  async fetchPacket(URL) {
+    this.response = await fetch(URL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'applications/json',
+      },
+    }).then((response) => {
+      return response.json();
+    }).catch((error) => {
+      throw(error);
+    });
+  }
+
+  /**
+   * @brief Normalizes the timestamp channel into sequential data.
+   * 
+   * @param {float} offset the first element value for all timestamps.
+   */
+  normalize(offset=0.0) {
+    // TODO: Implement
+  }
+
+  /**
+   * @brief returns channel data of pre-specified type.
+   * 
+   * @description Accepted types are:
+   *              - Channel [0, 4] -- Returns a list of floats for eeg data
+   *              - Timestamps -- Returns time since epoch, see below.
+   *              - Returns all data in a 2D list.
+   *              
+   *              Note that timestamp data is unormalized by default.
+   *              Hence unormalized data will be offset by time since
+   *              epoch.
+   * 
+   * @param {str} channel the channel name to return
+   */
+  getChannelData(channel) {
+    this.response.then((raw) => {
+      result = [];
+      try {
+        switch (channel) {
+          case ('Channel 0'):
+            // TODO: Implement
+            break;
+          case ('Channel 1'):
+            // TODO: Implement
+            break;
+          case ('Channel 2'):
+            // TODO: Implement
+            break;
+          case ('Channel 3'):
+            // TODO: Implement
+            break;
+          case ('Timestamp'):
+            // TODO: Implement
+            break;
+          case ('All'):
+            // TODO: Implement
+            break;
+          default:
+            throw EvalError('Undefined channel name. Double check you entered it right');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  }
+};
+
 /**
- *
+ * @brief EEGChart is an interface class to the underlying Chart type from chart.js
+ * 
+ * @details TODO: Add description
 */
 class EEGChart {
   /// PUBLIC
@@ -29,23 +116,33 @@ class EEGChart {
    *            to hold the chart.
   */
   constructor(data_package, type='line', html_ctx='#eeg-data-visual') {
-    this.eeg_channels = data_package[eeg_channels_id];
-    if(this.eeg_channels == undefined) {
-      throw ("eeg_channels is undefined. Likely a network or response error\n");
+    try {
+      this.eeg_channels = data_package[eeg_channels_id];
+      if(this.eeg_channels == undefined) {
+        throw TypeError("eeg_channels is undefined. Likely a network or response error\n");
+      }
+  
+      this.timestamp_channel = data_package[timestamp_channel_id];
+      if(this.timestamp_channel == undefined) {
+        throw TypeError("timestamp_channel is undefined. Likely a network or response error\n");
+      }
+  
+      this.type = type;
+      this.context_id = html_ctx;
+    } catch(error_msg) {
+      console.error(error_msg);
     }
-
-    this.timestamp_channel = data_package[timestamp_channel_id];
-    if(this.timestamp_channel == undefined) {
-      throw ("timestamp_channel is undefined. Likely a network or response error\n");
-    }
-
-    this.type = type;
-    this.context_id = html_ctx;
   }
 
   /**
-   * Updates chart by appending more data from the short poll 
-  */
+   * @brief Updates the chart internals based on data provided to it.
+   * 
+   * @description Update accepts data packets that hold timestamp and EEG channel data.
+   *              It seperates, normalizes and processes the data by passing it to the chart
+   *              internal object to be rendered. The render process is called by side-effect.
+   * 
+   * @param {EEGPacket} new_data new eeg and timestamp data. 
+   */
   update(new_data) {
     // Update timestamp channel
     let new_timestamps = new_data[timestamp_channel_id];
