@@ -3,6 +3,7 @@
 const timestamp_channel_id = "timestamp_channel";
 const eeg_channels_id = "eeg_channels";
 
+
 /// CLASSES
 
 class EEGPacket {
@@ -226,24 +227,24 @@ class EEGChart {
 /**
  * 
  * @returns 
- */
-async function fetchEEGData() {
-  const data_url = 'http://localhost:8000/poll_data';
-  const response = await fetch(data_url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then((packet) => {
-    return packet.json();
-  });
+//  */
+// async function fetchEEGData() {
+//   const data_url = 'http://localhost:8000/poll_data';
+//   const response = await fetch(data_url, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//   }).then((packet) => {
+//     return packet.json();
+//   });
 
-  return response;
-}
+//   return response;
+// }
 
-function shortPollUpdateChart(chart, new_data) {
-  chart.update(new_data);
-}
+// function shortPollUpdateChart(chart, new_data) {
+//   chart.update(new_data);
+// }
 
 
 /// 'MAIN'
