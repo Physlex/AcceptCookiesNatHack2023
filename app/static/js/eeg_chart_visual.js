@@ -37,49 +37,65 @@ class EEGPacket {
    * 
    * @param {float} offset the first element value for all timestamps.
    */
-  normalize(offset=0.0) {
-    // TODO: Implement
+  async normalize(offset=0.0) {
+    return await this.response.then((raw) => {
+      let new_timestamp = []; 
+
+      let old_timestamp = raw[timestamp_channel_id];
+      const prior_last_stamp = parseFloat(offset);
+      const epoch = parseFloat(old_timestamp[0]);
+      for (let i = 1; i < old_timestamp.length; ++i) {
+        const normalized_stamp = (parseFloat(old_timestamp[i] - epoch + prior_last_stamp)).toFixed(4);
+        new_timestamp.push(normalized_stamp);
+      }
+
+      return new_timestamp;
+    }).catch((error_msg) => {
+      console.error(error_msg);
+    });
   }
 
   /**
    * @brief returns channel data of pre-specified type.
    * 
    * @description Accepted types are:
-   *              - Channel [0, 4] -- Returns a list of floats for eeg data
-   *              - Timestamps -- Returns time since epoch, see below.
-   *              - Returns all data in a 2D list.
-   *              
-   *              Note that timestamp data is unormalized by default.
-   *              Hence unormalized data will be offset by time since
-   *              epoch.
-   * 
+   *              - channel{0, 1, 2, ... , 4} -- Returns a list of floats for ith eeg data channel
+   *              - timestamps -- Returns duration of eeg measurement. Measured since epoch.
+   *              - all -- Returns all data in a 2D list.
+   *
+   *              Note that timestamp data is not normalized by default. Un-normalized data will be
+   *              offset by time since epoch. Normalized data will be returned if 'normalize' is
+   *              called on this object before getChannelData('timestamps')
+   *
    * @param {str} channel the channel name to return
    */
   getChannelData(channel) {
     this.response.then((raw) => {
-      result = [];
       try {
+        if ((typeof channel) != "string") {
+          throw TypeError('channel id must be of type \'string\'');
+        } else {
+          channel.toLowerCase();
+        }
+
         switch (channel) {
-          case ('Channel 0'):
-            // TODO: Implement
-            break;
-          case ('Channel 1'):
-            // TODO: Implement
-            break;
-          case ('Channel 2'):
-            // TODO: Implement
-            break;
-          case ('Channel 3'):
-            // TODO: Implement
-            break;
-          case ('Timestamp'):
-            // TODO: Implement
-            break;
-          case ('All'):
-            // TODO: Implement
-            break;
+          case ('channel0'):
+            return raw[eeg_channels_id][0];
+          case ('channel1'):
+            return raw[eeg_channels_id][1];
+          case ('channel2'):
+            return raw[eeg_channels_id][2];
+          case ('channel3'):
+            return raw[eeg_channels_id][3];
+          case ('timestamp'):
+            return raw[timestamp_channel_id];
+          case ('all'):
+            let result = [];
+            result.push(raw[eeg_channels_id]);
+            result.push(raw[timestamp_channel_id]);
+            return result;
           default:
-            throw EvalError('Undefined channel name. Double check you entered it right');
+            throw EvalError('Undefined channel name. Double check you entered it right.');
         }
       } catch (error) {
         console.error(error);

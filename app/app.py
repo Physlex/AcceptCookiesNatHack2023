@@ -84,7 +84,7 @@ async def remove(id: int = 5):
         has_connected = False
 
 
-@app.post("/poll_data")
+@app.get("/poll_data")
 async def poll():
     eeg_channels = [[], [], [], []]
     timestamp_channel = []
