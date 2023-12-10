@@ -38,15 +38,15 @@ class EEGPacket {
    * 
    * @param {float} offset the first element value for all timestamps.
    */
-  async normalize(offset=0.0) {
-    return await this.response.then((raw) => {
-      let new_timestamp = []; 
+  normalize(old_timestamps, offset=0.0) {
+    return this.response.then((raw) => {
+      let new_timestamp = [];
 
-      let old_timestamp = raw[timestamp_channel_id];
+      let old_timestamps = raw[timestamp_channel_id];
       const prior_last_stamp = parseFloat(offset);
-      const epoch = parseFloat(old_timestamp[0]);
-      for (let i = 1; i < old_timestamp.length; ++i) {
-        const normalized_stamp = (parseFloat(old_timestamp[i] - epoch + prior_last_stamp)).toFixed(4);
+      const epoch = parseFloat(old_timestamps[0]);
+      for (let i = 1; i < old_timestamps.length; ++i) {
+        const normalized_stamp = (parseFloat(old_timestamps[i] - epoch + prior_last_stamp)).toFixed(4);
         new_timestamp.push(normalized_stamp);
       }
 
@@ -134,14 +134,19 @@ class EEGChart {
   */
   constructor(data_package, type='line', html_ctx='#eeg-data-visual') {
     try {
-      this.eeg_channels = data_package[eeg_channels_id];
+      this.eeg_channels = [];
+
+      const num_eeg_channels = 4;
+      for (let i = 0; i < num_eeg_channels; ++i) {
+        this.eeg_channels.push(data_package.getChannelData(`channel${i}`));
+      }
       if(this.eeg_channels == undefined) {
-        throw TypeError("eeg_channels is undefined. Likely a network or response error\n");
+        throw TypeError("eeg_channels is undefined.\n");
       }
   
-      this.timestamp_channel = data_package[timestamp_channel_id];
+      this.timestamp_channel = data_package.normalize(data_package.getChannelData('timestamp'));
       if(this.timestamp_channel == undefined) {
-        throw TypeError("timestamp_channel is undefined. Likely a network or response error\n");
+        throw TypeError("timestamp_channel is undefined.\n");
       }
   
       this.type = type;
@@ -162,20 +167,18 @@ class EEGChart {
    */
   update(new_data) {
     // Update timestamp channel
-    let new_timestamps = new_data[timestamp_channel_id];
-    const prior_last_stamp = parseFloat(this.timestamp_channel[this.timestamp_channel.length - 1]);
-    const epoch = parseFloat(new_timestamps[0]);
-    for (let i = 1; i < new_timestamps.length; ++i) {
-      const normalized_stamp = (parseFloat(new_timestamps[i] - epoch + prior_last_stamp)).toFixed(4);
-      this.chart_internal.data.labels.push(normalized_stamp);
+    const offset = this.timestamp_channel[this.timestamp_channel.length - 1];
+    let new_timestamps = new_data.normalize(new_data.getChannelData('timestamp'), offset);
+    for (let i = 0; i < new_timestamps.length; ++i) {
+      this.timestamp_channel.push(new_timestamps[i]);
     }
+    this.chart_internal.data.labels = this.timestamp_channel;
 
-    // Update eeg channel
-    let new_eeg_channels = new_data[eeg_channels_id]
+    // // Update eeg channel
     for (let i = 0; i < this.eeg_channels.length; ++i) {
-      let current_new_eeg_channel = new_eeg_channels[i];
-      for (let j = 0; j < current_new_eeg_channel.length; ++j) {
-        this.chart_internal.data.datasets[i].data.push(current_new_eeg_channel[j]);
+      let new_channel = new_data.getChannelData(`channel${i}`);
+      for (let j = 0; j < new_channel.length; ++j) {
+        this.chart_internal.data.datasets[i].data.push(new_channel[j]);
       }
     }
 
@@ -221,44 +224,18 @@ class EEGChart {
   }
 }
 
-
-/// FUNCTIONS
-
-/**
- * 
- * @returns 
-//  */
-// async function fetchEEGData() {
-//   const data_url = 'http://localhost:8000/poll_data';
-//   const response = await fetch(data_url, {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//   }).then((packet) => {
-//     return packet.json();
-//   });
-
-//   return response;
-// }
-
-// function shortPollUpdateChart(chart, new_data) {
-//   chart.update(new_data);
-// }
-
-
 /// 'MAIN'
 
-let eeg_data_visual_chart = fetchEEGData().then((data_packet) => {
-  let eeg_data_visual_chart = new EEGChart(data_packet);
-  eeg_data_visual_chart.build();
-  return eeg_data_visual_chart;
+let intializing_packet = new EEGPacket();
+intializing_packet.fetchPacket();
+let eeg_console = new EEGChart(intializing_packet);
+
+let shortPollUpdateChart = ((chart) => {
+  let new_data = EEGPacket();
+  new_data.fetchPacket();
+  chart.update(new_data);
 });
 
 const num_seconds = 1;
 const SEC_TO_MILLISEC = 1000;
-eeg_data_visual_chart.then((chart) => {
-  fetchEEGData().then((new_data) => {
-    window.setInterval(shortPollUpdateChart, (num_seconds * SEC_TO_MILLISEC), chart, new_data);
-  });
-})
+window.setInterval(shortPollUpdateChart, (num_seconds * SEC_TO_MILLISEC), eeg_console);
