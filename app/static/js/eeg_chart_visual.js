@@ -54,6 +54,6 @@ function shortPollEEG() {
       return;
     }
   
-    createChart(current_data, timestamp_channel);
+    createChart(eeg_channels, timestamp_channel);
   });
 }
