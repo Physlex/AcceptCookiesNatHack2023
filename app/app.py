@@ -84,7 +84,7 @@ async def remove(id: int = 5):
         has_connected = False
 
 
-@app.post("/poll_data")
+@app.post("/poll")
 async def poll():
     eeg_channels = [[], [], [], []]
     timestamp_channel = []
@@ -126,11 +126,10 @@ async def poll():
             time = row[0]
             timestamp_channel.append(time)
 
-
     # Create package response object
     eeg_package = {"timestamp_channel":timestamp_channel, "eeg_channels":eeg_channels}
     encoded_package = jsonable_encoder(eeg_package)
-    return JSONResponse(content=encoded_package, media_type="application/json")
+    return JSONResponse(content=encoded_package)
 
 @app.post("/filter_state")
 async def filter_state_update(filter: str = ""):
